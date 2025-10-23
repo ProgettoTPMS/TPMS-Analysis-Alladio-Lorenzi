@@ -1,0 +1,46 @@
+clear; close all; clc
+poro=0.5;
+Lc=0.01; %m
+Vf=4.99752e-07; %m3
+A_wet=0.000511633; %m2
+Dh=4*Vf/A_wet; %m
+nu=1.004e-6; %m2/s
+rho=998.2; %Kg/m3
+mu=nu*rho; %Pa/s
+Re=[5; 10; 50; 100];
+Us=ones(length(Re),1);
+Up=ones(length(Re),1);
+for ii=1:length(Re)
+    Us(ii)=(Re(ii)*nu*poro)/Dh;%m/s
+    Up(ii)=Us(ii)/poro;
+end
+
+
+gradp_cfd=[0.008442;1.75716e-02; 1.46036e-01;0];
+gradp_cfd_matrix=gradp_cfd.*rho;
+loglog(Us, gradp_cfd_matrix, 'ro','MarkerFaceColor','r','LineWidth',3)
+hold on
+
+%ERGUN
+Dp=(3/2)*((1-poro)/poro)*Dh;
+
+
+%Darcy- Forchhmeier
+Usnew=1e-4:1e-6:1e-2;
+gradp_Darcy=ones(length(Usnew),1);
+gradp_ergun=ones(length(Usnew),1);
+for jj=1:length(Usnew)
+    Krel=8.1e-4;
+    Cf=0.46;
+    K=Krel*Lc^2;
+    gradp_Darcy(jj)=-(-(mu*Usnew(jj))/K-(rho*Cf*Usnew(jj)^2)/sqrt(K));
+    gradp_ergun(jj)=150*((mu*Usnew(jj))/Dp.^2)*((1-poro)^2/poro^3)+(7/4)*(rho*Usnew(jj)^2/Dp)*((1-poro)/poro^3);
+end
+loglog(Usnew,gradp_Darcy,'b','LineWidth',2)
+hold on
+loglog(Usnew,gradp_ergun,'y','LineWidth',2)
+grid on
+legend("cfd","Darcy-Forchheimer","Ergun",'FontSize',12)
+title("Pressure gradient vs Superficial velocity -Split P1 - 50% porosity, water @ 20°C",'FontSize',24)
+xlabel('Us [m/s]', 'FontSize',16)
+ylabel('\Deltap/L [Pa/m]','FontSize',16)
