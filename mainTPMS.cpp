@@ -82,6 +82,9 @@ int main(int argc, char* argv[])
 
 	
 	vtkNew<vtkTransformPolyDataFilter> finalTPMS = tpms_final.TpmsTransform();
+	// Compute porosity from the transform's output and print it
+	double porosity = tpms_final.TpmsVolumeFromTransform(finalTPMS, tarSize);
+	std::cout << "Porosity (from main): " << porosity << std::endl;
 
 	// vtkNew<vtkLinearSubdivisionFilter> boxRefined = tpms_final.TpmsBox(tarSize, origin);
 

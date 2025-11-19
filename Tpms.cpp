@@ -8,6 +8,7 @@
  // cpp file of Tpms class
 
 #include "Tpms.h"
+#include <iostream>
 
 using namespace std;
 
@@ -115,6 +116,27 @@ double Tpms::TpmsVolume(vtkBooleanOperationPolyDataFilter* intersectTPMS, float 
 	cout << "Evaluated volume: " << stlVol << endl;
 	cout << "Fluid porosity: " << porosity << endl;
 	return porosity;
+}
+
+// In Tpms.cpp — add this function implementation (after the existing TpmsVolume)
+
+double Tpms::TpmsVolumeFromTransform(vtkTransformPolyDataFilter* polyFilter, float tarSize) {
+    // Ensure include for iostream is present at top of this file:
+    // #include <iostream>
+    vtkNew<vtkMassProperties> massProperties;
+
+    double cubeVolume = (tarSize * 1.01) * (tarSize * 1.01) * (tarSize * 1.01);
+
+    // Use the transform filter's output port as input connection
+    massProperties->SetInputConnection(polyFilter->GetOutputPort());
+    massProperties->Update();
+
+    double stlVol = massProperties->GetVolume();
+    double porosity = 1.0 - stlVol / cubeVolume;
+
+    std::cout << "Evaluated volume: " << stlVol << std::endl;
+    std::cout << "Fluid porosity: " << porosity << std::endl;
+    return porosity;
 }
 
 

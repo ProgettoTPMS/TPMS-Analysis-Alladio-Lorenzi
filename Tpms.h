@@ -56,6 +56,13 @@ public:
 	*/
 	double TpmsVolume(vtkBooleanOperationPolyDataFilter* intersectTPMS, float tarSize);
 	
+	// In Tpms.h — add (declaration)
+    /**
+     * \brief Compute volume/porosity from a transform polydata filter's output
+     * This is a convenience wrapper so main can pass the transform filter directly.
+     */
+    double TpmsVolumeFromTransform(vtkTransformPolyDataFilter* polyFilter, float tarSize);
+
 	/**
 	 * \brief Flip normals orientiation
 	*/
