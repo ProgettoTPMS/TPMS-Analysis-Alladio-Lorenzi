@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # TPMSproject
 This project aims at implementing a framework to create different types of Triply Periodic Minimal Surfaces (TPMS).
 
@@ -33,3 +34,8 @@ Now you need to compile the project, using:
 cmake .. -GNinja
 cmake --build .
 ```
+=======
+TPMS ANALYSIS (A. ALLADIO, P. LORENZI)
+The scope of this repo is to organize our work and keep record of it.
+Current step: laminar flow analysis for SplitP1, Gyroid; getting familiar with OpenFOAM, reproducing the results for 50% porosity structure.
+>>>>>>> 84eee9061a59afa11f7a26bd9899182e03bca145
