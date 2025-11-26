@@ -28,7 +28,7 @@ void TpmsSolidGenerator(const int npoints, const int numcellx, const int numcell
 		senv[i] = sin(pi2 * i);
 
 	float* cosv_t = new float[dimension];
-	if ((type == 'I') || (type == 'S') || (type == 'F'))
+	if ((type == 'I') || (type == 'S') || (type == 'F')|(type == 'L'))
 		for (int i = 0; i < dimension; i++)
 			cosv_t[i] = cos(2 * pi2 * i);
 	float* senv_t = new float[dimension];
