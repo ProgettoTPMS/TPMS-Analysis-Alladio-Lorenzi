@@ -25,10 +25,15 @@ void TpmsSheetGenerator(const int npoints, const int numcellx, const int numcell
 		senv[i] = sin(pi * i);
 
 	float* cosv_t = new float[dimension];
-	if ((type == 'I') || (type == 'S') || (type == 'F'))
+	if ((type == 'I') || (type == 'S') || (type == 'F')|(type == 'L'))
 		for (int i = 0; i < dimension; i++)
 			cosv_t[i] = cos(2 * pi * i);
+	float* senv_t = new float[dimension];
+	if ((type == 'I') || (type == 'S') || (type == 'F')||(type == 'L'))
+		for (int i = 0; i < dimension; i++)
+			senv_t[i] = sin(2 * pi * i);
 
+	
 	int temp = 0;
 
 	switch (type)
@@ -111,10 +116,23 @@ void TpmsSheetGenerator(const int npoints, const int numcellx, const int numcell
 				}
 	} break;
 
+		// SPLIT-P1
+	case 'L': {
+		for (int z = 0; z < dimz; z++)
+			for (int y = 0; y < dimy; y++)
+				for (int x = 0; x < dimx; x++) {
+					scal = +(1.1*(senv_t[x]*senv[z]*cosv[y]+senv_t[y]*senv[x]*cosv[z]+senv_t[z]*senv[y]*cosv[x])-0.2*(cosv_t[x]*cosv_t[y]+cosv_t[y]*cosv_t[z]+cosv_t[z]*cosv_t[x])-0.4*(cosv_t[x]*cosv_t[y]*cosv_t[z]))  - rvalue;
+					float* a = static_cast<float*> (volume->GetScalarPointer(x, y, z));
+					*a = scal;
+					temp++;
+				}
+	} break;
+
 	}
 
 	delete[] cosv;
 	delete[] senv;
 	delete[] cosv_t;
+	delete[] senv_t;
 
 }
