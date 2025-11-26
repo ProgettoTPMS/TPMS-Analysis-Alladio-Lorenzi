@@ -3,7 +3,7 @@
 # Increment number final mesh (reduce in case of several unit cells)
 Number of final points = 150
 
-# TPMS type: P, G, D, I, S, F, N (for the full names, see the file TPMSGenerator.cpp)
+# TPMS type: P, G, D, I, S, F, N, L (for the full names, see the file TPMSGenerator.cpp)
 TPMSType = G
 
 # TPMS type: solid, sheet 
