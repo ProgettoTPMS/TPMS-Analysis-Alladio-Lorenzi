@@ -1,0 +1,99 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2406                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      T;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+dimensions      [0 0 0 1 0 0 0];
+
+internalField       uniform 300;
+
+boundaryField
+{
+    TPMS
+    {
+        type    codedFixedValue;
+        value   $internalField;  // Placeholder value, will be overridden by the code.
+        name    wallTPMS;
+        code
+        #{
+            // Access the 'transportProperties' dictionary
+            const IOdictionary& transportDict = db().lookupObject<IOdictionary>("transportProperties");
+            // Retrieve 'Tw' from 'transportProperties'
+            const scalar Tw = readScalar(transportDict.lookup("Tw"));
+            // Set the boundary value to 'Tw'
+            operator==(Tw);
+        #};
+    }
+
+    inlet
+    {
+        type    codedFixedValue;
+        value   $internalField;
+        name    periodicT;
+
+        codeInclude
+        #{
+            #include "fvCFD.H"
+        #};
+        codeOptions
+        #{
+            -I$(LIB_SRC)/finiteVolume/lnInclude
+        #};
+        code
+        #{
+            // Access the mesh 
+            const fvMesh& fluidMesh = db().parent().objectRegistry::lookupObject<fvMesh>("region0");
+            const IOdictionary& transportDict = db().lookupObject<IOdictionary>("transportProperties");
+
+            const scalar Twall (transportDict.getScalar("Tw"));
+            const scalar Tb_in (transportDict.getScalar("Tbin"));
+
+            // Retrieve the mesh
+            label patchID_outlet = fluidMesh.boundaryMesh().findPatchID("outlet");
+            const polyPatch& outletPatch = fluidMesh.boundaryMesh()[patchID_outlet];
+
+            scalarField outletT = fvc::interpolate(fluidMesh.lookupObject<volScalarField>("T")).ref().boundaryField()[patchID_outlet]; 
+            scalarField outletPhi = fluidMesh.lookupObject<surfaceScalarField>("phi").boundaryField()[patchID_outlet]; 
+            
+            scalar sum_A_ui_Ti = 0.0;  // Sum of A_i * u_i * T_i at the outlet
+            scalar sum_A_ui = 0.0;     // Sum of A_i * u_i at the outlet
+
+            // Loop over all faces of the outlet patch to calculate Tb
+            forAll(outletPatch, facei)
+            {
+                scalar phii = outletPhi[facei];   // Flux at face i
+                scalar Ti = outletT[facei];       // Temperature at face i
+
+                sum_A_ui_Ti += Ti * phii;
+                sum_A_ui    += phii;
+            }
+
+            // Compute the boundary temperature value Tb based on outlet values
+            scalar Tb = sum_A_ui_Ti / sum_A_ui;
+
+            operator==(Twall - (Twall - outletT) / (Twall - Tb) * (Twall - Tb_in));
+        #};
+    }
+
+    outlet
+    {
+        type            zeroGradient;
+    }
+    ".*"
+    {
+        type            cyclicAMI;
+    }
+}
+
+
+// ************************************************************************* //
