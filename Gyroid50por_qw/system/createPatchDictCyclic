@@ -1,0 +1,44 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createPatchDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+pointSync false;
+patches
+(
+    {
+        // Name of new patch
+        name outlet_cyclicAMI;
+        // Type of new patch
+        patchInfo
+        {
+            type                cyclicAMI;
+            neighbourPatch      inlet_cyclicAMI;
+            transform           translational;
+            separationVector    (0 -0.01 0);
+            matchTolerance      0.001;
+        }
+        // How to construct: either from 'patches' or 'set'
+        constructFrom patches;
+        // If constructFrom = patches : names of patches. Wildcards allowed.
+        patches (outlet);
+    }
+    {
+        name    inlet_cyclicAMI;
+        patchInfo
+        {
+            type                cyclicAMI;
+            neighbourPatch      outlet_cyclicAMI;
+            transform           translational;
+            separationVector    (0 0.01 0);
+            matchTolerance      0.001;
+        }
+        constructFrom patches;
+        patches (inlet);
+    }
+);

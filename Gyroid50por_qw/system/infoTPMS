@@ -1,0 +1,60 @@
+// Code to compute the wetted area of the TPMS and the fluid volume 
+type coded;
+libs (utilityFunctionObjects);
+writeControl    writeTime;
+// Name of on-the-fly generated functionObject
+name infoTPMS;
+codeWrite
+#{
+    // Compute the surface area
+    // Find the patchIDs of the patches by name
+    label patchID_TPMS = mesh().boundaryMesh().findPatchID("TPMS");
+    // label patchID_top = mesh().boundaryMesh().findPatchID("top");
+    // label patchID_bottom = mesh().boundaryMesh().findPatchID("bottom");
+
+    // Create a polyPatch for looping
+    const polyPatch& patchTPMS = mesh().boundaryMesh()[patchID_TPMS];
+    // const polyPatch& patchTop = mesh().boundaryMesh()[patchID_top];
+    // const polyPatch& patchBottom = mesh().boundaryMesh()[patchID_bottom];
+
+    // Initialize patchArea
+    scalar patchAreaTPMS = 0.0;
+    // scalar patchAreaTop = 0.0;
+    // scalar patchAreaBottom = 0.0;
+
+    // Loop trhough all faces on the polyPatch, adding their magnitude surface
+    // area vectors
+    forAll(patchTPMS, faceI)
+    {
+        patchAreaTPMS += mesh().magSf().boundaryField()[patchID_TPMS][faceI];
+    }
+    // forAll(patchTop, faceI)
+    // {
+    //     patchAreaTop += mesh().magSf().boundaryField()[patchID_top][faceI];
+    // }
+    // forAll(patchBottom, faceI)
+    // {
+    //     patchAreaBottom += mesh().magSf().boundaryField()[patchID_bottom][faceI];
+    // }
+    // scalar patchArea = patchAreaTPMS + patchAreaTop + patchAreaBottom;
+
+    // Compute the total vlomue
+    scalar volFluid(0.0);
+    forAll(mesh().cells(),cellI)
+    {
+        volFluid += mesh().V()[cellI];
+    }
+
+    // Compute the total volume of the mesh bounding box (slightly different from 10x10x10 becasue of mesh dislocation during SHM)
+    boundBox cubeBound = mesh().bounds();
+    vector span = cubeBound.span();
+    scalar cubeVol = span.x() * span.y() * span.z();
+
+
+    std::ofstream meshInfoFile;
+    meshInfoFile.open("infoTPMS.dat", std::ofstream::out | std::ofstream::app);
+    meshInfoFile << "latestTime" << "\t" << "cubeVol" << "\t" << "areaWet" << "\t" << "volFluid" << "\n";
+    meshInfoFile << mesh().time().timeName() << "\t" << cubeVol << "\t" << patchAreaTPMS << "\t" << volFluid << "\n";
+    meshInfoFile.close();
+
+#};

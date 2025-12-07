@@ -1,0 +1,144 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |				
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.com
+    \\  /    A nd           | Version:  2206                                   	
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+len 5;
+//dh 0.5;
+dh  0.125;
+
+Lbig 5;
+LbigPeriod 10;
+
+xmin  -$len;
+xmax   $len;
+ymin  -$Lbig;
+ymax   $Lbig;
+zmin  -$Lbig;
+zmax   $Lbig;
+
+dx $dh;
+dy $dh;
+dz $dh;
+
+lx #calc "$xmax - $xmin";
+ly #calc "$ymax - $ymin";
+lz #calc "$zmax - $zmin";
+
+xcells #calc "abs(($lx)/($dx))";
+ycells #calc "abs(($ly)/($dy))";
+zcells #calc "abs(($lz)/($dz))";
+
+vertices        
+(
+    ($xmin  $ymin  $zmin) 
+    ($xmax  $ymin  $zmin)
+    ($xmax  $ymax  $zmin)
+    ($xmin  $ymax  $zmin)
+    ($xmin  $ymin  $zmax)
+    ($xmax  $ymin  $zmax)
+    ($xmax  $ymax  $zmax)
+    ($xmin  $ymax  $zmax)
+);
+
+blocks          
+(
+    hex (0 1 2 3 4 5 6 7) ($xcells $ycells $zcells) simpleGrading (1 1 1)
+);
+
+edges           
+(
+);
+
+boundary         
+(
+    outlet_cyclic
+    {
+        type                cyclic;
+        neighbourPatch      inlet_cyclic;
+        transform           translational;
+        separationVector    (0 -$LbigPeriod 0);
+        matchTolerance      0.001;
+        faces
+        (
+            (3 7 6 2)
+        );
+    }
+    inlet_cyclic
+    {
+        type                cyclic;
+        neighbourPatch      outlet_cyclic;
+        transform           translational;
+        separationVector    (0 $LbigPeriod 0);
+        matchTolerance      0.001;
+        faces
+        (
+            (1 5 4 0)
+        );
+    }
+    top_cyclic
+    {
+        type    	    cyclic;
+        neighbourPatch	bottom_cyclic;
+	    transform	    translational;
+	    separationVector    (0 0 -$LbigPeriod);
+	    matchTolerance	0.001;
+        faces
+        (
+            (7 4 5 6)
+        );
+    }
+    bottom_cyclic
+    {
+        type    	    cyclic;
+	    neighbourPatch	top_cyclic;
+	    transform	    translational;
+	    separationVector    (0 0 $LbigPeriod);
+	    matchTolerance	0.001;
+        faces
+        (
+            (3 0 1 2)
+        );
+    }
+    left_cyclic
+    {
+        type    	    cyclic;
+	    neighbourPatch	right_cyclic;
+	    transform	    translational;
+	    separationVector    (-10 0 0);
+	    matchTolerance	0.001;
+        faces
+        (
+            (2 1 5 6)
+        );
+    }
+    right_cyclic
+    {
+        type    	    cyclic;
+	    neighbourPatch	left_cyclic;
+	    transform	    translational;
+	    separationVector    (10 0 0);
+	    matchTolerance	0.001;
+        faces
+        (
+            (3 0 4 7)
+        );
+    }
+);
+
+mergePatchPairs 
+(
+);
+
+// ************************************************************************* //

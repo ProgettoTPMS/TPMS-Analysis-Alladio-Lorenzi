@@ -1,0 +1,129 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |				
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8                                   	
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     simpleFoam;
+
+startFrom       latestTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         3000;
+
+deltaT          1;
+
+writeControl    runTime;
+
+writeInterval   100;
+
+purgeWrite      2;
+
+writeFormat     ascii;
+
+writePrecision  8;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   6;
+
+runTimeModifiable yes;
+
+functions
+{
+     Ucomponents
+     {
+          type                components;
+          libs                (fieldFunctionObjects);
+          field               U;
+          region              region0;
+          writeControl        onEnd;
+     }
+     readFields_UT
+     {
+          type                readFields;
+          libs                (fieldFunctionObjects);
+          fields              (T Uy);
+          region              region0;
+          writeControl        onEnd;
+     }
+     qwall
+     {
+          type              myWallHeatFlux;
+          libs              ("libmyFieldFunctionObjects.so");
+          patches           (TPMS);
+          writeControl        onEnd;
+          writeFields       true;
+     }
+     readFields_qw
+     {
+          type                readFields;
+          libs                (fieldFunctionObjects);
+          fields              (myWallHeatFlux);
+          region              region0;
+          writeControl        onEnd;
+     }
+
+     #includeFunc "qw_sum"
+     #includeFunc "Tw_sum"
+     #includeFunc "Uy_sum"
+     #includeFunc "Tb_sum"
+     
+     // Uy_vol0 {type                volFieldValue;
+     //      libs                (fieldFunctionObjects);
+     //      fields              (Uy);
+     //      operation           volAverage;
+     //      regionType          cellZone;
+     //      name                subZone0;
+	//      writeControl        onEnd;
+     //      writeFields         true;}
+
+     // Tw0
+     // {
+     //      type              surfaceFieldValue;
+     //      fields           (T);
+     //      operation         areaAverage;
+     //      regionType      faceZone;
+     //      name            wall_sub0_zone;
+     //      writeControl        onEnd;
+     //      writeFields         true;
+     //      surfaceFormat       none;
+     // }
+     // qw0
+     // {
+     //      type              surfaceFieldValue;
+     //      fields           (myWallHeatFlux);
+     //      operation         areaAverage;
+     //      regionType      faceZone;
+     //      name            wall_sub0_zone;
+     //      writeControl        onEnd;
+     //      writeFields         true;
+     //      surfaceFormat       none;
+     // }
+     // Tb0 {type                volFieldValue;
+     //      libs                (fieldFunctionObjects);
+     //      fields              (T);
+     //      operation           volWeightedAverage;
+     //      weightField         (Uy);
+     //      regionType          cellZone;
+     //      name                subZone0;
+	//      writeControl        onEnd;
+     //      writeFields         true;}
+
+};
+// ************************************************************************* //

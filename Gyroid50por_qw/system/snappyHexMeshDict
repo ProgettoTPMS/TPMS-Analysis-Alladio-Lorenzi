@@ -1,0 +1,276 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |				
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  8                                   	
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Which of the steps to run
+
+castellatedMesh true;
+snap            true;
+addLayers       false;
+
+geometry
+{
+    TPMS.stl
+    {
+        type triSurfaceMesh;
+        name TPMS;
+
+        regions
+        {
+        }
+    }
+};
+
+// Settings for the castellatedMesh generation.
+castellatedMeshControls
+{
+
+    // Refinement parameters
+
+    maxLocalCells 100000;
+
+    maxGlobalCells 2000000;
+
+    minRefinementCells 0;
+
+
+    maxLoadUnbalance 0.10;
+
+
+    nCellsBetweenLevels 2;
+    //nCellsBetweenLevels 2;
+
+    // Explicit feature edge refinement
+
+    features
+    (
+        // {
+        //     file "TPMS.eMesh"; // file containing edge mesh
+        //     level 1;               // level of refinement
+        // }
+    );
+
+    // Surface based refinement
+    // ~~~~~~~~~~~~~~~~~~~~~~~~
+
+    refinementSurfaces
+    {
+        TPMS
+        {
+	    // global
+            // Surface-wise min and max refinement level
+            level (0 1);
+        }
+    }
+
+    // Feature angle:
+
+    resolveFeatureAngle 20;		//default
+
+    planarAngle 30;
+
+    // Region-wise refinement
+
+    refinementRegions
+    {
+    }
+
+    // Mesh selection
+    // ~~~~~~~~~~~~~~
+
+    locationInMesh (1.2173287433741358 -0.6070123954521458 1.6801704627619038);
+
+
+    // Whether any faceZones (as specified in the refinementSurfaces)
+    // are only on the boundary of corresponding cellZones or also allow
+    // free-standing zone faces. Not used if there are no faceZones.
+    allowFreeStandingZoneFaces true;
+    //allowFreeStandingZoneFaces false;
+
+    // Optional: do not remove cells likely to give snapping problems
+    // handleSnapProblems false;
+
+    // Optional: switch off topological test for cells to-be-squashed
+    //           and use geometric test instead
+    //useTopologicalSnapDetection false;
+}
+
+// Settings for the snapping.
+snapControls
+{
+    // Number of patch smoothing iterations before finding correspondence
+    // to surface
+    nSmoothPatch 12;	
+
+    // Maximum relative distance for points to be attracted by surface.
+    // True distance is this factor times local maximum edge length.
+    // Note: changed(corrected) w.r.t 17x! (17x used 2* tolerance)
+    tolerance 2.0;
+
+    // Number of mesh displacement relaxation iterations.
+    nSolveIter 40;	//improved
+
+    // Maximum number of snapping relaxation iterations. Should stop
+    // before upon reaching a correct mesh.
+    nRelaxIter 8;	//improved
+
+    // Feature snapping
+
+        // Number of feature edge snapping iterations.
+        // Leave out altogether to disable.
+        nFeatureSnapIter 10;
+
+        // Detect (geometric only) features by sampling the surface
+        // (default=false).
+        implicitFeatureSnap false;
+
+        // Use castellatedMeshControls::features (default = true)
+        explicitFeatureSnap true;
+
+        // Detect features between multiple surfaces
+        // (only for explicitFeatureSnap, default = false)
+        multiRegionFeatureSnap false;
+
+    // wip: disable snapping to opposite near surfaces (revert to 22x behaviour)
+    // detectNearSurfacesSnap false;
+}
+
+// Settings for the layer addition.
+addLayersControls
+{
+    relativeSizes false;
+
+    firstLayerThickness 0.3;
+
+    thickness 2.5;
+
+    minThickness 1e-16;
+
+    layers
+    {
+	gyroid
+        {
+            nSurfaceLayers 7;
+        }
+
+    }
+
+    nGrow 0;
+
+    // Advanced settings
+
+    // Static analysis of starting mesh
+
+        featureAngle 250;		//default
+
+        // Stop layer growth on highly warped cells
+        maxFaceThicknessRatio 0.8;
+
+    // Patch displacement
+
+        // Number of smoothing iterations of surface normals
+        nSmoothSurfaceNormals 1;
+
+        // Smooth layer thickness over surface patches
+        nSmoothThickness 10;
+
+    // Medial axis analysis
+
+        minMedialAxisAngle 90;
+        minMedianAxisAngle 90;
+
+        // Reduce layer growth where ratio thickness to medial
+        // distance is large
+        maxThicknessToMedialRatio 0.3;
+
+        // Number of smoothing iterations of interior mesh movement direction
+        nSmoothNormals 3;
+
+        // Optional: limit the number of steps walking away from the surface.
+        // Default is unlimited.
+        //nMedialAxisIter 10;
+
+        // Optional: smooth displacement after medial axis determination.
+        // default is 0.
+        //nSmoothDisplacement 90;
+
+        // (wip)Optional: do not extrude a point if none of the surrounding points is
+        // not extruded. Default is false.
+        //detectExtrusionIsland true;
+
+    // Mesh shrinking
+
+        // Optional: at non-patched sides allow mesh to slip if extrusion
+        // direction makes angle larger than slipFeatureAngle. Default is
+        // 0.5*featureAngle.
+        slipFeatureAngle 20;
+
+        // Maximum number of snapping relaxation iterations. Should stop
+        // before upon reaching a correct mesh.
+        nRelaxIter 5;
+
+        // Create buffer region for new layer terminations
+        nBufferCellsNoExtrude 0;
+
+        // Overall max number of layer addition iterations. The mesher will
+        // exit if it reaches this number of iterations; possibly with an
+        // illegal mesh.
+        nLayerIter 50;
+
+        // Max number of iterations after which relaxed meshQuality controls
+        // get used. Up to nRelaxedIter it uses the settings in
+        // meshQualityControls,
+        // after nRelaxedIter it uses the values in
+        // meshQualityControls::relaxed.
+        nRelaxedIter 20;
+
+        // Additional reporting: if there are just a few faces where there
+        // are mesh errors (after adding the layers) print their face centres.
+        // This helps in tracking down problematic mesh areas.
+        //additionalReporting true;
+}
+
+// Generic mesh quality settings. At any undoable phase these determine
+// where to undo.
+meshQualityControls
+{
+    // Specify mesh quality constraints in separate dictionary so can
+    // be reused (e.g. checkMesh -meshQuality)
+    #include "meshQualityDict"
+
+    // Optional : some meshing phases allow usage of relaxed rules.
+    // See e.g. addLayersControls::nRelaxedIter.
+    relaxed
+    {
+        // Maximum non-orthogonality allowed. Set to 180 to disable.
+        maxNonOrtho 75;
+    }
+
+    //minFlatness 0.5;
+
+    // Advanced
+
+        // Number of error distribution iterations
+        nSmoothScale 4;
+        // amount to scale back displacement at error points
+        errorReduction 0.75;
+}
+
+
+// Merge tolerance. Is fraction of overall bounding box of initial mesh.
+// Note: the write tolerance needs to be higher than this.
+mergeTolerance 1e-6;
+
+// ************************************************************************* //

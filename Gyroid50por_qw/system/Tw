@@ -1,0 +1,12 @@
+// Mandatory entries (unmodifiable)
+type            surfaceFieldValue;
+libs            (fieldFunctionObjects);
+writeControl    onEnd;
+writeFields     false;
+
+// Mandatory entries (runtime modifiable)
+fields          (T);
+operation       areaAverage;
+regionType      patch;
+name            TPMS;
+

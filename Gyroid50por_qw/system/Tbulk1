@@ -1,0 +1,13 @@
+Tbulk1
+{
+    type            surfaceFieldValue;
+    libs            (fieldFunctionObjects);
+    regionType      patch;
+    name            inlet;    
+    operation       weightedAreaAverage;
+    fields          (T);
+    weightField     Uy;
+
+	writeControl    onEnd;
+    writeFields     false;
+}
