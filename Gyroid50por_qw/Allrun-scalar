@@ -1,0 +1,26 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+mv system/controlDict system/controlDictSimple
+mv system/controlDictScalar system/controlDict
+
+rm -r processor*
+rm -r log.createPatch
+runApplication createPatch -overwrite
+
+latestTime0=$(foamListTimes -latestTime)
+
+cp -r 0.orig/T $latestTime0/
+
+python3 changeAMI.py $latestTime0/U
+python3 changeAMI.py $latestTime0/phi
+python3 changeAMI.py $latestTime0/p
+
+
+runApplication scalarTransportFoam
+
+mv system/controlDict system/controlDictScalar
+mv system/controlDictSimple system/controlDict
+

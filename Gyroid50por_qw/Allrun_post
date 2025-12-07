@@ -1,0 +1,30 @@
+#!/bin/bash
+source /usr/lib/openfoam/openfoam2212/etc/bashrc
+
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+rm log.*
+rm -r processor*
+rm -r postProcessing/
+rm -r 0
+rm -r 1* 2* 3* 4* 5* 6* 7* 8* 9*
+rm *.csv
+rm *.dat
+rm -r VTK
+
+runApplication createPatch -dict system/createPatchDictCyclic -overwrite
+restore0Dir
+rm 0/T # Remove T file from 0 since inlet/outlet non cyclicAMI
+runApplication decomposePar
+runParallel $(getApplication)
+runApplication reconstructPar -latestTime
+mv log.simpleFoam log.simpleFoamRun
+runApplication simpleFoam -postProcess -func infoTPMS -latestTime # To get the mesh information
+mv log.simpleFoam log.simpleFoamPost
+python3 gradP.py True False  # To get pressure gradient
+
+./Allrun-scalar
+python3 getResult.py 

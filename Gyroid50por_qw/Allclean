@@ -1,0 +1,18 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/CleanFunctions      # Tutorial clean functions
+#------------------------------------------------------------------------------
+
+cleanCase0
+# rm infoTPMS.dat
+# rm results.dat
+# rm gradp.dat
+rm *.csv *.dat *.obj badFaces constant/triSurface/*.obj constant/triSurface/*.vtp
+# rm *.obj
+# rm constant/triSurface/*.obj
+# rm constant/triSurface/*.vtp
+# rm *.csv
+# rm  badFaces
+rm -r logs
+
+#------------------------------------------------------------------------------

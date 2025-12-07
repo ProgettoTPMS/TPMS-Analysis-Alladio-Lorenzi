@@ -1,0 +1,19 @@
+#!/bin/bash
+source /usr/lib/openfoam/openfoam2212/etc/bashrc
+
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+
+./Allclean 
+
+touch TPMS.foam 
+
+./Allrun-simple 
+
+./Allrun-scalar
+python3 getResult.py 
+
+
